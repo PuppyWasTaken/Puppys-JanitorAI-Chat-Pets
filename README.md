@@ -26,7 +26,7 @@ A browser extension that adds a pal that follows you along as you type in your J
 ## Installation
 
 ### Web Store Installation
-1. Install the extension from the Chrome Webstore (review pending) or Firefox Add-on Store (review pending).
+1. Install the extension from the [Chrome Webstore](https://chromewebstore.google.com/detail/blapjjinejelciecpdpnogbjpfplammj) or [Firefox Add-on Store](https://addons.mozilla.org/en-US/firefox/addon/puppys-pals-jai-chat-pets/).
 2. Pin the extension to your 'Quick Access'
 
 ### Manual Installation (Chrome)
