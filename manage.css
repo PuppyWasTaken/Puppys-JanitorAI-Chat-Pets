@@ -22,6 +22,11 @@ button:focus-visible, input:focus-visible { outline: 2px solid #f4c4e5; outline-
 .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
 .hint { color: #c6b8d0; font-size: 13px; }
 #status { min-height: 26px; color: #8db6b5; }
+.sound-list { list-style: none; padding: 0; }
+.sound-list li { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin: 12px 0; }
+.sound-list span { flex: 1; overflow-wrap: anywhere; }
+.sound-list audio { width: 240px; max-width: 100%; }
+#sound-status { color: #8db6b5; }
 @media (max-width: 720px) { .frames { grid-template-columns: 1fr; } }
 .settingscredits{
 	margin-top:1rem;

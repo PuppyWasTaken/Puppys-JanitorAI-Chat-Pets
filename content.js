@@ -21,6 +21,12 @@
   let assets = frameSources(settings.skin, customPet, path => chrome.runtime.getURL(path));
   let settingsRevision = 0;
   let customRevision = 0;
+  let soundRevision = 0;
+  let typingSounds = ChatBarPetSounds.options([], path => chrome.runtime.getURL(path));
+  const soundPlayer = ChatBarPetSounds.createPlayer();
+  function soundSource() {
+    return settings.soundEnabled ? typingSounds.find(sound => sound.id === settings.sound)?.src || null : null;
+  }
   const mirroredStyles = [
     'direction', 'fontFamily', 'fontSize', 'fontWeight', 'fontStyle', 'fontVariant',
     'lineHeight', 'letterSpacing', 'textTransform', 'textIndent', 'textAlign',
@@ -79,6 +85,7 @@
     const next = normalizeSettings(value);
     const skinChanged = next.skin !== settings.skin;
     settings = next;
+    soundPlayer.configure(soundSource(), settings.volume);
     if (skinChanged || refreshFrames) {
       assets = frameSources(settings.skin, customPet, path => chrome.runtime.getURL(path));
       clearTimeout(resetTimer);
@@ -145,7 +152,8 @@
         rect.bottom < 0 || rect.top > window.innerHeight) { hide(); return; }
     const width = settings.size;
     const height = width * 0.75;
-    const { left, top } = railPosition(caret, width, settings.gap, window.innerWidth, rect);
+    const { left, top } = railPosition(caret, width, settings.gap, window.innerWidth, rect,
+      rect, settings.paddingLeft, settings.paddingRight);
     host.style.setProperty('width', `${width}px`, 'important');
     host.style.setProperty('height', `${height}px`, 'important');
     // Only horizontal movement glides. Resizing/scrolling keeps the rail attached
@@ -174,6 +182,11 @@
     // beforeinput is not used: only edits actually accepted by the input animate.
     if (!event.isComposing && !composing && event.inputType !== 'insertFromPaste') tap();
   }
+  function onKeyDown(event) {
+    if (!event.defaultPrevented && eligible(event.target) && isChat(location.href) && ChatBarPetSounds.typingKey(event)) {
+      soundPlayer.play();
+    }
+  }
   function onCompositionStart(event) {
     if (!eligible(event.target)) return;
     clearTimeout(compositionEndTimer);
@@ -187,6 +200,7 @@
     if (eligible(event.target)) { tap(); schedule(); }
   }
   const events = [
+    [document, 'keydown', onKeyDown],
     [document, 'input', onInput], [document, 'selectionchange', schedule],
     [document, 'focusin', schedule], [document, 'focusout', schedule],
     [document, 'keyup', schedule], [document, 'pointerup', schedule],
@@ -200,7 +214,7 @@
   if (document.fonts?.addEventListener) events.push([document.fonts, 'loadingdone', schedule]);
 
   function sync() {
-    const active = settings.enabled && isChat(location.href);
+    const active = (settings.enabled || Boolean(soundSource())) && isChat(location.href);
     if (active && !listening) {
       listening = true;
       for (const [target, name, handler] of events) target.addEventListener(name, handler, true);
@@ -223,6 +237,7 @@
       host = image = mirror = editor = rail = null;
       positioned = false;
       composing = false;
+      soundPlayer.stop();
     }
     schedule();
   }
@@ -236,15 +251,20 @@
       ++customRevision;
       customPet = changes.customPet.newValue;
     }
+    if (changes.typingSounds) {
+      ++soundRevision;
+      typingSounds = ChatBarPetSounds.options(changes.typingSounds.newValue, path => chrome.runtime.getURL(path));
+    }
     if (area === 'local' && changes.petSettings) {
       ++settingsRevision;
       applySettings(changes.petSettings.newValue, Boolean(changes.customPet));
-    } else if (changes.customPet) {
-      applySettings(settings, true);
+    } else if (changes.customPet || changes.typingSounds) {
+      applySettings(settings, Boolean(changes.customPet));
     }
   });
-  chrome.storage.local.get(['petSettings', 'customPet']).then(result => {
+  chrome.storage.local.get(['petSettings', 'customPet', 'typingSounds']).then(result => {
     if (customRevision === 0) customPet = result.customPet;
+    if (soundRevision === 0) typingSounds = ChatBarPetSounds.options(result.typingSounds, path => chrome.runtime.getURL(path));
     // A newer popup update must win over a delayed initial storage read.
     applySettings(settingsRevision === 0 ? result.petSettings : settings, true);
   }).catch(() => sync());

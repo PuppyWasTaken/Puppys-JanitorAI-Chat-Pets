@@ -12,12 +12,23 @@
   <label for="skin">Pet appearance</label>
   <select id="skin" aria-describedby="skin-note"></select>
   <p id="skin-note" class="hint">Upload three images to create your own Custom Pet.</p>
-  <button id="manage" type="button">Manage Custom Pet</button>
+   <button id="manage" type="button">Manage Custom Pet &amp; Sounds</button>
   <label for="size">Pet size <output id="size-value">64 px</output></label>
   <input id="size" type="range" min="32" max="112" step="4" value="64">
   <label for="gap">Height above bar <output id="gap-value">4 px</output></label>
   <input id="gap" type="range" min="-24" max="160" step="1" value="4" aria-describedby="gap-note">
-  <p id="gap-note" class="hint">Adjust where your pet fits and sits.</p>
+   <label for="padding-left">Left bound <output id="padding-left-value">0 px</output></label>
+   <input id="padding-left" type="range" min="0" max="128" step="1" value="0" aria-describedby="bounds-note">
+   <label for="padding-right">Right bound <output id="padding-right-value">0 px</output></label>
+   <input id="padding-right" type="range" min="0" max="128" step="1" value="0" aria-describedby="bounds-note">
+     <p id="gap-note" class="hint">Adjust where your pet fits and sits.</p>
+    <label class="toggle"><span>Play typing sounds</span><input id="sound-enabled" type="checkbox"></label>
+    <label for="sound">Typing sound</label>
+    <select id="sound" aria-describedby="sound-note"></select>
+    <p id="sound-note" class="hint">Add your own typing sound in Manage Custom Pet &amp; Sounds.</p>
+   <label for="volume">Sound volume <output id="volume-value">50%</output></label>
+   <input id="volume" type="range" min="0" max="100" step="1" value="50">
+   <button id="test-sound" type="button" disabled>Preview sound</button>
   <p id="status" role="status"></p>
   <p class="note">Extension by Puppywastaken :)</p>
 <div class="links">
@@ -30,7 +41,8 @@
       </svg></a>
   </div>
   <script src="external-links.js"></script>
-  <script src="pet-core.js"></script>
+   <script src="pet-core.js"></script>
+   <script src="typing-sounds.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

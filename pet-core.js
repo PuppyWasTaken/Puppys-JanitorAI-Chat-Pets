@@ -13,7 +13,8 @@
 	{ id: 'shark', label: 'Blue Shark', prefix: 'shark' },
     { id: 'custom', label: 'Custom Pet', prefix: null }
   ].map(Object.freeze));
-  const defaults = Object.freeze({ enabled: true, skin: 'classic', size: 64, gap: 4 });
+  const defaults = Object.freeze({ enabled: true, skin: 'classic', size: 64, gap: 4,
+    paddingLeft: 0, paddingRight: 0, boundsUnit: 'px', soundEnabled: false, sound: 'sound-mechanical-keyboard-1', volume: 50 });
   function customFrames(value) {
     const frames = value?.frames;
     return Array.isArray(frames) && frames.length === 3 &&
@@ -29,7 +30,7 @@
     return skinFrames(id, customPet).map(frame => frame.startsWith('data:') ? frame : getURL(frame));
   }
   // Match CSS-module names, not their build-specific hash or line-number suffix.
-  const railSelector = '[class*="_chatTextarea_"]';
+   const railSelector = '[class*="chatTextarea_"]';
   const composerSelector = `[class*="_chatInputContainer_"] textarea${railSelector}`;
   function isChat(url) {
     try {
@@ -45,13 +46,27 @@
       enabled: typeof value.enabled === 'boolean' ? value.enabled : defaults.enabled,
       skin: skins.some(skin => skin.id === value.skin) ? value.skin : defaults.skin,
       size: clamp(value.size ?? defaults.size, defaults.size, 32, 112),
-      gap: clamp(value.gap ?? defaults.gap, defaults.gap, -24, 160)
+      gap: clamp(value.gap ?? defaults.gap, defaults.gap, -24, 160),
+      // Reset legacy rem-based bounds once; new settings are always pixel insets.
+      paddingLeft: value.boundsUnit === 'px' ? clamp(value.paddingLeft ?? defaults.paddingLeft, defaults.paddingLeft, 0, 128) : defaults.paddingLeft,
+      paddingRight: value.boundsUnit === 'px' ? clamp(value.paddingRight ?? defaults.paddingRight, defaults.paddingRight, 0, 128) : defaults.paddingRight,
+      boundsUnit: defaults.boundsUnit,
+      // Preserve earlier versions' selected custom sounds; an old 'off' stays muted.
+      soundEnabled: typeof value.soundEnabled === 'boolean' ? value.soundEnabled :
+        typeof value.sound === 'string' && /^sound-[a-zA-Z0-9-]{1,64}$/.test(value.sound),
+      sound: typeof value.sound === 'string' && /^sound-[a-zA-Z0-9-]{1,64}$/.test(value.sound) &&
+        !['sound-mechanical-keyboard-2', 'sound-typewriter'].includes(value.sound) ? value.sound : defaults.sound,
+      volume: clamp(value.volume ?? defaults.volume, defaults.volume, 0, 100)
     };
   }
-  function railPosition(caret, size, gap, viewportWidth, railRect = caret.rect) {
+  function railPosition(caret, size, gap, viewportWidth, railRect = caret.rect, boundsRect = railRect, paddingLeft = 0, paddingRight = 0) {
     const viewportMax = Math.max(0, viewportWidth - size);
-    const minLeft = Math.max(0, Math.min(viewportMax, railRect.left));
-    const maxLeft = Math.max(minLeft, Math.min(viewportMax, railRect.right - size));
+    // Reduce both insets proportionally if a narrow container cannot fit them.
+    const available = Math.max(0, boundsRect.right - boundsRect.left - size);
+    const total = paddingLeft + paddingRight;
+    const scale = total > available ? available / total : 1;
+    const minLeft = Math.max(0, Math.min(viewportMax, boundsRect.left + paddingLeft * scale));
+    const maxLeft = Math.max(minLeft, Math.min(viewportMax, boundsRect.right - size - paddingRight * scale));
     return {
       left: Math.max(minLeft, Math.min(maxLeft, caret.x - size / 2)),
       // Anchor to the textarea's top edge; negative gaps lower the pet into it.

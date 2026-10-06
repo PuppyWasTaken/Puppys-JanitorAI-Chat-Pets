@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Puppy's Pals: JanitorAI Chat Pets",
-  "version": "0.3.1",
+  "version": "1.0.0",
   "description": "Add a cute typing pet to your JanitorAI chat bar. Choose your companion and watch it follow along as you type.",
   "icons": {
     "16": "icons/icon16.png",
@@ -25,11 +25,11 @@
   "options_ui": { "page": "manage.html", "open_in_tab": true },
   "content_scripts": [{
     "matches": ["https://janitorai.com/chats/*"],
-    "js": ["pet-core.js", "content.js"],
+    "js": ["pet-core.js", "typing-sounds.js", "content.js"],
     "run_at": "document_idle"
   }],
   "web_accessible_resources": [{
-    "resources": ["assets/*.png"],
+    "resources": ["assets/*.png", "assets/sounds/*.mp3"],
     "matches": ["https://janitorai.com/*"]
   }]
 }

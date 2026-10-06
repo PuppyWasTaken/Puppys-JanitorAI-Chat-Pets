@@ -9,7 +9,7 @@ chrome.webNavigation.onHistoryStateUpdated.addListener(async ({ tabId, frameId, 
     if (!ChatBarPetCore.isChat(url)) return;
     try {
       await chrome.scripting.executeScript({
-        target: { tabId }, files: ['pet-core.js', 'content.js']
+        target: { tabId }, files: ['pet-core.js', 'typing-sounds.js', 'content.js']
       });
     } catch {
       // The tab may have closed or navigated outside the granted host permission.
