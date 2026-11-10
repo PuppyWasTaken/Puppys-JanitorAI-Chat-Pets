@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Puppy's Pals: JanitorAI Chat Pets",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Add a cute typing pet to your JanitorAI chat bar. Choose your companion and watch it follow along as you type.",
   "icons": {
     "16": "icons/icon16.png",

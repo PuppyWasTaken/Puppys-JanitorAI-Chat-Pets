@@ -11,8 +11,10 @@
   <label class="toggle"><span>Show my pet</span><input id="enabled" type="checkbox" checked></label>
   <label for="skin">Pet appearance</label>
   <select id="skin" aria-describedby="skin-note"></select>
-  <p id="skin-note" class="hint">Upload three images to create your own Custom Pet.</p>
-   <button id="manage" type="button">Manage Custom Pet &amp; Sounds</button>
+  <p id="skin-note" class="hint">Upload three images per pet and save multiple named presets.</p>
+  <label for="custom-preset">Custom pet preset</label>
+  <select id="custom-preset" disabled></select>
+   <button id="manage" type="button">Manage Pet Presets &amp; Sounds</button>
   <label for="size">Pet size <output id="size-value">64 px</output></label>
   <input id="size" type="range" min="32" max="112" step="4" value="64">
   <label for="gap">Height above bar <output id="gap-value">4 px</output></label>

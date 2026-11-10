@@ -8,22 +8,30 @@
 </head>
 <body>
   <main>
-    <header><p class="eyebrow">JANITORAI CHAT PETS</p><h1>Custom Pet</h1><p>Upload an idle pose and two typing poses.</p></header>
+    <header><p class="eyebrow">JANITORAI CHAT PETS</p><h1>Custom Pet Presets</h1><p>Save multiple pets, each with an idle pose and two typing poses.</p></header>
     <section class="instructions" aria-label="Image requirements">
       <p><strong>PNG, JPEG, or WebP · up to 5 MB per file</strong></p>
       <p>Transparent PNGs are best. Use matching canvas sizes, keep the face and/or body at the same scale, and align the images between poses. Images are not stretched or automatically aligned.</p>
       <p>Images are stored only in this browser's local storage. Nothing is uploaded or collected. Saving selects your custom pet immediately.</p>
     </section>
     <form id="custom-form">
+      <section class="instructions" aria-label="Pet presets">
+        <label for="pet-preset">Saved presets</label>
+        <select id="pet-preset" disabled><option value="">New preset</option></select>
+        <div class="actions"><button id="new-preset" type="button" class="secondary" disabled>New preset</button><button id="use-preset" type="button" disabled>Use selected preset</button></div>
+        <p class="hint">Loading a preset only changes this editor. Use it or save it to change your active pet.</p>
+        <label for="preset-name">Preset name</label>
+        <input id="preset-name" type="text" maxlength="80" placeholder="e.g. Sleepy kitten" required disabled>
+      </section>
       <div class="frames">
         <section class="frame"><h2>1. Idle</h2><div class="preview"><img id="preview-idle" alt="Idle pose preview" hidden><span id="empty-idle">No image yet</span></div><label for="file-idle">Choose idle image</label><input id="file-idle" type="file" accept="image/png,image/jpeg,image/webp"><p id="info-idle" class="hint">Resting pose when you aren't typing.</p></section>
         <section class="frame"><h2>2. Left paw</h2><div class="preview"><img id="preview-left" alt="Left paw pose preview" hidden><span id="empty-left">No image yet</span></div><label for="file-left">Choose left-paw image</label><input id="file-left" type="file" accept="image/png,image/jpeg,image/webp"><p id="info-left" class="hint">One of the alternating typing poses.</p></section>
         <section class="frame"><h2>3. Right paw</h2><div class="preview"><img id="preview-right" alt="Right paw pose preview" hidden><span id="empty-right">No image yet</span></div><label for="file-right">Choose right-paw image</label><input id="file-right" type="file" accept="image/png,image/jpeg,image/webp"><p id="info-right" class="hint">The other alternating typing pose.</p></section>
       </div>
-      <div class="actions"><button id="save" type="submit" disabled>Save &amp; use Custom Pet</button><button id="remove" type="button" class="secondary" disabled>Remove saved Custom Pet</button></div>
+      <div class="actions"><button id="save" type="submit" disabled>Save &amp; use preset</button><button id="save-as-new" type="button" class="secondary" disabled>Save as new preset</button><button id="remove" type="button" class="secondary" disabled>Delete selected preset</button></div>
       <p id="status" role="status" aria-live="polite">Loading saved images…</p>
     </form>
-    <p class="hint">After saving, use the toolbar popup to adjust pet size and height or switch back to a built-in pet. Unsaved changes do not affect your current pet.</p>
+    <p class="hint">After saving, use the toolbar popup to switch between your presets or built-in pets and adjust size and height. Unsaved changes do not affect your current pet. Presets share the browser's local storage limit with custom sounds; if storage is full, delete unused presets or sounds.</p>
     <section class="instructions" aria-labelledby="sounds-heading">
       <h2 id="sounds-heading">Typing sounds</h2>
       <p>Mechanical Keyboard 1, Mechanical Keyboard 2, and Smartphone are included. Add MP3 clips here to create more sound options in the toolbar popup. Enable Play typing sounds there and adjust the volume. Sounds are off by default.</p>

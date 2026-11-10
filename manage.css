@@ -14,11 +14,12 @@ p { line-height: 1.6; }
 [hidden] { display: none !important; }
 label { display: block; margin-bottom: 8px; font-weight: 600; }
 input { width: 100%; font: inherit; font-size: 12px; }
+select, input[type="text"] { width: 100%; padding: 10px; border: 1px solid #715474; border-radius: 8px; color: #f5edf7; background: #2b2435; font: inherit; }
 button, input::file-selector-button { padding: 10px 14px; border: 1px solid #715474; border-radius: 8px; color: #211c2b; background: #8db6b5; font: inherit; cursor: pointer; }
 input::file-selector-button { font-size: 12px; margin-right: 8px; }
 .secondary { background: #32283f; color: #f5edf7; }
-button:disabled, input:disabled { opacity: .5; cursor: not-allowed; }
-button:focus-visible, input:focus-visible { outline: 2px solid #f4c4e5; outline-offset: 3px; }
+button:disabled, input:disabled, select:disabled { opacity: .5; cursor: not-allowed; }
+button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid #f4c4e5; outline-offset: 3px; }
 .actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 24px; }
 .hint { color: #c6b8d0; font-size: 13px; }
 #status { min-height: 26px; color: #8db6b5; }

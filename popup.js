@@ -1,6 +1,7 @@
 (async () => {
   const enabled = document.getElementById('enabled');
   const skin = document.getElementById('skin');
+  const preset = document.getElementById('custom-preset');
   const size = document.getElementById('size');
   const gap = document.getElementById('gap');
   const paddingLeft = document.getElementById('padding-left');
@@ -13,9 +14,10 @@
   let typingSounds = [];
   const status = document.getElementById('status');
   const preview = document.getElementById('pet-preview');
-  const controls = [enabled, skin, size, gap, paddingLeft, paddingRight, soundEnabled, sound, volume];
+  const controls = [enabled, skin, preset, size, gap, paddingLeft, paddingRight, soundEnabled, sound, volume];
   let writeQueue = Promise.resolve();
   let customPet = null;
+  let presets = [];
   let pendingWrites = 0;
   let customOption;
   document.getElementById('manage').addEventListener('click', async () => {
@@ -36,6 +38,13 @@
     for (const entry of typingSounds) sound.add(new Option(entry.name, entry.id));
     sound.value = typingSounds.some(entry => entry.id === selected) ? selected : ChatBarPetCore.defaults.sound;
   }
+  function presetOptions() {
+    const selected = pendingWrites ? preset.value : customPet?.id || 'legacy-custom';
+    preset.replaceChildren();
+    for (const entry of presets) preset.add(new Option(entry.name, entry.id));
+    if (!presets.length) preset.add(new Option('No saved presets yet', ''));
+    preset.value = presets.some(entry => entry.id === selected) ? selected : presets[0]?.id || '';
+  }
   testSound.addEventListener('click', () => soundPlayer.play());
   function labels() {
     document.getElementById('size-value').value = `${size.value} px`;
@@ -46,8 +55,10 @@
     const source = typingSounds.find(entry => entry.id === sound.value)?.src || null;
     soundPlayer.configure(soundEnabled.checked ? source : null, Number(volume.value));
     testSound.disabled = !soundEnabled.checked || !source || Number(volume.value) === 0;
-    customOption.disabled = !ChatBarPetCore.customFrames(customPet);
-    preview.src = ChatBarPetCore.frameSources(skin.value, customPet, path => chrome.runtime.getURL(path))[0];
+    customOption.disabled = !presets.length;
+    preset.disabled = !presets.length;
+    const selectedPet = presets.find(entry => entry.id === preset.value) || customPet;
+    preview.src = ChatBarPetCore.frameSources(skin.value, selectedPet, path => chrome.runtime.getURL(path))[0];
   }
   function showSettings(value) {
     const settings = ChatBarPetCore.settings(value);
@@ -63,16 +74,21 @@
     labels();
   }
   try {
-    const result = await chrome.storage.local.get(['petSettings', 'customPet', 'typingSounds']);
+    const result = await chrome.storage.local.get(['petSettings', 'customPet', 'customPetPresets', 'typingSounds']);
     customPet = result.customPet;
+    presets = ChatBarPetCore.customPresets(result.customPetPresets, customPet);
+    presetOptions();
     typingSounds = ChatBarPetSounds.options(result.typingSounds, path => chrome.runtime.getURL(path));
     soundOptions();
     showSettings(result.petSettings);
   } catch { status.textContent = 'Could not load settings. Reopen the popup to try again.'; return; }
   for (const control of controls) control.disabled = false;
+  labels();
   for (const control of controls) {
     control.addEventListener('input', async () => {
+      if (control === preset) skin.value = 'custom';
       labels();
+      const presetId = preset.value;
       const petSettings = ChatBarPetCore.settings({
         enabled: enabled.checked, skin: skin.value, size: Number(size.value), gap: Number(gap.value),
         paddingLeft: Number(paddingLeft.value), paddingRight: Number(paddingRight.value), boundsUnit: 'px',
@@ -81,21 +97,32 @@
       ++pendingWrites;
       try {
         // Preserve the order of rapid slider/skin updates, even on slow storage.
-        writeQueue = writeQueue.catch(() => {}).then(() => chrome.storage.local.set({ petSettings }));
+        writeQueue = writeQueue.catch(() => {}).then(async () => {
+          const update = { petSettings };
+          if (petSettings.skin === 'custom') {
+            const result = await chrome.storage.local.get(['customPetPresets', 'customPet']);
+            const selected = ChatBarPetCore.customPresets(result.customPetPresets, result.customPet).find(entry => entry.id === presetId);
+            if (!selected) throw new Error('Preset no longer exists');
+            update.customPet = selected;
+          }
+          await chrome.storage.local.set(update);
+        });
         await writeQueue;
         status.textContent = 'Saved';
-      } catch { status.textContent = 'Could not save settings.'; }
+      } catch { status.textContent = 'Could not save settings. Reopen the popup to reload saved presets.'; }
       finally { --pendingWrites; }
     });
   }
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area !== 'local') return;
     if (changes.customPet) customPet = changes.customPet.newValue;
+    if (changes.customPetPresets) presets = ChatBarPetCore.customPresets(changes.customPetPresets.newValue, customPet);
+    if (changes.customPet || changes.customPetPresets) presetOptions();
     if (changes.typingSounds) {
       typingSounds = ChatBarPetSounds.options(changes.typingSounds.newValue, path => chrome.runtime.getURL(path));
       soundOptions();
     }
     if (changes.petSettings && !pendingWrites) showSettings(changes.petSettings.newValue);
-    else if (changes.customPet || changes.typingSounds) labels();
+    else if (changes.customPet || changes.customPetPresets || changes.typingSounds) labels();
   });
 })();

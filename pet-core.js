@@ -21,6 +21,21 @@
       frames.every(frame => typeof frame === 'string' && /^data:image\/png;base64,[A-Za-z0-9+/]+={0,2}$/.test(frame)) &&
       frames.reduce((total, frame) => total + frame.length, 0) <= 3000000 ? frames.slice() : null;
   }
+  function customPresets(value, legacyPet) {
+    // Older versions stored only customPet. Keep it available until the first edit.
+    if (!Array.isArray(value)) {
+      const frames = customFrames(legacyPet);
+      return frames ? [{ id: 'legacy-custom', name: 'Custom Pet', frames }] : [];
+    }
+    const ids = new Set();
+    return value.flatMap(preset => {
+      const frames = customFrames(preset);
+      if (!frames || typeof preset.id !== 'string' || !/^[a-zA-Z0-9-]{1,64}$/.test(preset.id) ||
+          ids.has(preset.id) || typeof preset.name !== 'string' || !preset.name.trim()) return [];
+      ids.add(preset.id);
+      return [{ id: preset.id, name: preset.name.trim().slice(0, 80), frames }];
+    });
+  }
   function skinFrames(id, customPet) {
     if (id === 'custom') return customFrames(customPet) || skinFrames(defaults.skin);
     const skin = skins.find(skin => skin.id === id) || skins[0];
@@ -73,7 +88,7 @@
       top: Math.max(0, railRect.top - size * 0.75 - gap)
     };
   }
-  const core = { defaults, skins, skinFrames, customFrames, frameSources, composerSelector, railSelector, isChat, settings, railPosition };
+  const core = { defaults, skins, skinFrames, customFrames, customPresets, frameSources, composerSelector, railSelector, isChat, settings, railPosition };
   if (typeof module !== 'undefined' && module.exports) module.exports = core;
   else globalThis.ChatBarPetCore = core;
 })();
